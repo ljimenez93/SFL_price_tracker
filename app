@@ -4,7 +4,7 @@ import requests
 app = Flask(__name__)
 
 # Replace this with your actual API URL
-API_URL = "https://your-original-api.com/api/v1/prices"
+API_URL = "https://sfl.world/api/v1/prices"
 
 @app.route("/prices", methods=["GET"])
 def get_prices():
