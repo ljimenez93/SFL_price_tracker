@@ -1,8 +1,8 @@
-name: Registro de Precios de Activos
+name: Registro de Precios de Verduras
 
 on:
   schedule:
-    - cron: '5 */1 * * *'  # Ejecuta cada 6 horas (ajusta según necesites)
+    - cron: '10 */1 * * *'  # Ejecuta cada 6 horas (ajusta según necesites)
   workflow_dispatch:  # Permite ejecución manual
 
 jobs:
@@ -25,11 +25,11 @@ jobs:
         
     - name: Ejecutar script de registro de precios
       run: python price_logger.py
-              
+        
     - name: Commit y push de los nuevos datos
       run: |
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'actions@github.com'
-        git add datos/precios_activos.csv
-        git commit -m "Actualización automática de precios [skip ci]" || echo "No changes to commit"
+        git add data/precios_verduras.csv
+        git commit -m "Actualización automática de precios de verduras [skip ci]" || echo "No changes to commit"
         git push
