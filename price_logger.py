@@ -1,11 +1,10 @@
 import requests
 import csv
-import os
 import datetime
 from pathlib import Path
 
 # Configuración
-CSV_FILE = "data/prices.csv"
+CSV_FILE = "data/precios_verduras.csv"
 
 # Asegurar que el directorio exista
 Path("data").mkdir(exist_ok=True)
@@ -21,7 +20,7 @@ def obtener_precios():
     # URL de tu API (ajusta según sea necesario)
     url = "https://sfl.world/api/v1/prices"
     
-   try:
+    try:
         response = requests.get(url)
         data = response.json()
         
