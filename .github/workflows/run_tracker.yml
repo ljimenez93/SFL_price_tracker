@@ -1,33 +1,35 @@
-name: Price Logger (Multi-file)
+name: Registro de Precios de Activos
 
 on:
   schedule:
-    - cron: '3 */2 * * *'  # Every 2 hours (UTC)
-  workflow_dispatch:       # Allow manual trigger
+    - cron: '5 */1 * * *'  # Ejecuta cada 6 horas (ajusta según necesites)
+  workflow_dispatch:  # Permite ejecución manual
 
 jobs:
-  log-prices:
+  actualizar_precios:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.x
-
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Run price logger
-        run: python price_logger.py
-
-      - name: Commit & Push new CSV
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add prices_*.csv
-          git commit -m "📊 Add new price data file [CI run]" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
+    - name: Checkout del repositorio
+      uses: actions/checkout@v2
+      
+    - name: Configurar Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+        
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Ejecutar script de registro de precios
+      run: python price_logger.py
+              
+    - name: Commit y push de los nuevos datos
+      run: |
+        git config --global user.name 'GitHub Actions Bot'
+        git config --global user.email 'actions@github.com'
+        git add datos/precios_activos.csv
+        git commit -m "Actualización automática de precios [skip ci]" || echo "No changes to commit"
+        git push
