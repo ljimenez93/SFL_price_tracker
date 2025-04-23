@@ -19,7 +19,7 @@ if not Path(CSV_FILE).exists():
 def obtener_precios():
     """Obtiene los precios de todas las verduras desde la API"""
     # URL de tu API (ajusta según sea necesario)
-    url = "https://tu-api-url.com/precios"
+    url = "https://sfl.world/api/v1/prices"
     
     try:
         response = requests.get(url)
