@@ -1,62 +1,39 @@
-import os
-import csv
 import requests
-from datetime import datetime, timezone
+import json
+from datetime import datetime
+import os
 
-# Your API URL
-url = "https://sfl.world/api/v1/prices"  # SFL API
+API_URL = "https://sfl.world/api/v1/prices"
+OUTPUT_FILE = "prices.txt"
 
-try:
-    response = requests.get(url)
-    data = response.json()
+def fetch_prices():
+    """Fetches price data from the API."""
+    if not API_URL:
+        print("Error: API_URL environment variable not set.")
+        return None
+    try:
+        response = requests.get(API_URL)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        data = response.json()
+        if "data" in data and "p2p" in data["data"]:
+            return data["data"]["p2p"]
+        else:
+            print(f"Error: Unexpected API response format: {data}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data from API: {e}")
+        return None
 
-    # Convert API timestamp to UTC datetime
-    timestamp = datetime.fromtimestamp(data["updatedAt"] / 1000, tz=timezone.utc)
-    formatted_time = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+def store_prices(prices):
+    """Stores the fetched prices in a text file with timestamp."""
+    if prices:
+        timestamp = datetime.now().isoformat()
+        with open(OUTPUT_FILE, "a") as f:
+            for asset, price in prices.items():
+                f.write(f"{asset},{price},{timestamp}\n")
+        print(f"Prices stored successfully at {timestamp}")
 
-    # Extract asset prices
-    prices = data["data"]["p2p"]
-    asset_names = list(prices.keys())
-    asset_values = [prices[a] for a in asset_names]
-
-    file_path = "prices.txt"
-
-    # Create or update the file
-    if not os.path.exists(file_path):
-        # First time: create file with header
-        with open(file_path, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(["Timestamp"] + asset_names)
-            writer.writerow([formatted_time] + asset_values)
-    else:
-        # Merge new column with existing file
-        with open(file_path, newline='') as f:
-            reader = list(csv.reader(f))
-
-        # Append new column to the existing file
-        header = reader[0]
-        rows = reader[1:]
-
-        if header[0] != "Timestamp":
-            raise Exception("Invalid file format: first column must be 'Timestamp'")
-
-        if len(rows) != len(asset_values):
-            raise Exception("Mismatch between row count and asset count")
-
-        # Add new column name to header
-        header.append(formatted_time)
-
-        # Add new price value to each row
-        for i, row in enumerate(rows):
-            row.append(asset_values[i])
-
-        # Write updated content back to the file
-        with open(file_path, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(header)
-            writer.writerows(rows)
-
-    print(f"✅ Prices updated in {file_path}")
-
-except Exception as e:
-    print(f"❌ Error: {e}")
+if __name__ == "__main__":
+    prices = fetch_prices()
+    if prices:
+        store_prices(prices)
