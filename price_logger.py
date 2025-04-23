@@ -1,69 +1,53 @@
+import gspread
 import requests
-import csv
-import datetime
-from pathlib import Path
+from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime, timezone
+import json
 import os
 
-# Configuración
-CSV_FILE = "data/precios_verduras.csv"
+# Load service account credentials from GitHub secret
+creds_json = os.environ.get("GOOGLE_SHEETS_CREDS")
+creds_dict = json.loads(creds_json)
 
-# Asegurar que el directorio exista
-Path("data").mkdir(exist_ok=True)
+# Authenticate with Google Sheets
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client = gspread.authorize(creds)
 
-def obtener_precios():
-    """Obtiene los precios de todas las verduras desde la API"""
-    # URL de tu API (ajusta según sea necesario)
-    url = "https://sfl.world/api/v1/prices"
-    
-    try:
-        response = requests.get(url)
-        data = response.json()
-        
-        # Extraer los precios y el timestamp
-        precios_verduras = data["data"]["p2p"]
-        timestamp = data["updatedAt"]
-        
-        return timestamp, precios_verduras
-    except Exception as e:
-        print(f"Error al obtener precios: {e}")
-        return None, {}
+# Open the Google Sheet
+sheet = client.open("SFL Price Tracker").worksheet("Prices")  # Adjust name as needed
 
-def registrar_precios():
-    """Obtiene y registra los precios de todas las verduras"""
-    timestamp, precios_verduras = obtener_precios()
-    
-    if not precios_verduras:
-        print("No se pudieron obtener precios. Verifique la conexión o la API.")
-        return
-    
-    # Convertir timestamp a formato legible
-    fecha_hora = datetime.datetime.fromtimestamp(timestamp/1000).strftime('%Y-%m-%d %H:%M:%S')
-    
-    # Crear o actualizar el archivo CSV
-    file_exists = os.path.isfile(CSV_FILE)
-    
-    # Determinar encabezados (timestamp + todas las verduras)
-    headers = ["Timestamp"] + list(precios_verduras.keys())
-    
-    # Preparar la nueva fila con el timestamp formateado y todos los precios
-    nueva_fila = [fecha_hora]
-    for verdura in headers[1:]:  # Todas las verduras excepto "Timestamp"
-        nueva_fila.append(precios_verduras.get(verdura, ""))
-    
-    # Escribir al CSV
-    with open(CSV_FILE, 'a', newline='') as file:
-        writer = csv.writer(file)
-        
-        # Si el archivo no existe, escribir los encabezados primero
-        if not file_exists:
-            writer.writerow(headers)
-        
-        # Escribir la nueva fila con todos los precios
-        writer.writerow(nueva_fila)
-    
-    print(f"Registrado nuevo conjunto de precios en {fecha_hora}")
+# Fetch API data
+url = "https://sfl.world/api/v1/prices"  # API URL
+response = requests.get(url)
+data = response.json()
 
-if __name__ == "__main__":
-    print("Ejecutando registro de precios de verduras...")
-    registrar_precios()
-    print("Registro completado")
+# Extract UTC timestamp and format it
+timestamp = datetime.fromtimestamp(data["updatedAt"] / 1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+
+# Extract asset prices
+prices = data["data"]["p2p"]
+assets = list(prices.keys())
+values = list(prices.values())
+
+# Read existing headers (first row)
+header = sheet.row_values(1)
+
+# If first column is empty, set up headers
+if not header:
+    sheet.append_row(["Timestamp"] + assets)
+else:
+    # If new assets appear later, extend headers
+    for asset in assets:
+        if asset not in header:
+            header.append(asset)
+            sheet.update_cell(1, len(header), asset)
+
+# Create full row with values in correct columns
+row = [timestamp]
+for asset in header[1:]:  # skip "Timestamp"
+    row.append(prices.get(asset, ""))
+
+# Append row to sheet
+sheet.append_row(row)
+print("✅ Prices logged in row format.")
