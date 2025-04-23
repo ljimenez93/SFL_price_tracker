@@ -5,11 +5,10 @@ import datetime
 from pathlib import Path
 
 # Configuración
-API_KEY = "https://sfl.world/api/v1/prices"
-CSV_FILE = "datos/precios_verduras.csv"
+CSV_FILE = "data/prices.csv"
 
 # Asegurar que el directorio exista
-Path("datos").mkdir(exist_ok=True)
+Path("data").mkdir(exist_ok=True)
 
 # Crear el archivo CSV si no existe
 if not Path(CSV_FILE).exists():
@@ -20,15 +19,10 @@ if not Path(CSV_FILE).exists():
 def obtener_precios():
     """Obtiene los precios de todas las verduras desde la API"""
     # URL de tu API (ajusta según sea necesario)
-    url = "https://tu-api-url.com/precios"
+    url = "https://sfl.world/api/v1/prices"
     
-    # Si tu API requiere autenticación, añade los headers necesarios
-    headers = {}
-    if API_KEY:
-        headers["Authorization"] = f"Bearer {API_KEY}"
-    
-    try:
-        response = requests.get(url, headers=headers)
+   try:
+        response = requests.get(url)
         data = response.json()
         
         # Extraer los precios de la sección p2p
