@@ -25,6 +25,9 @@ jobs:
       - name: Run price logger script
         run: python price_logger.py
 
+      - name: Add changes to Git
+        run: git add prices.txt
+
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
