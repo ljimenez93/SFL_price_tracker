@@ -5,7 +5,7 @@ name: Price Logger
 
 on:
   schedule:
-    - cron: '2 */2 * * *'  # Every 2 hours
+    - cron: '2 */2 * * *'  # Every 1 hours
   workflow_dispatch:
 
 jobs:
