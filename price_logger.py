@@ -2,19 +2,13 @@ import requests
 import csv
 import datetime
 from pathlib import Path
+import os
 
 # Configuración
 CSV_FILE = "data/precios_verduras.csv"
 
 # Asegurar que el directorio exista
 Path("data").mkdir(exist_ok=True)
-
-# Crear el archivo CSV si no existe
-if not Path(CSV_FILE).exists():
-    with open(CSV_FILE, 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["Fecha", "Hora", "Verdura", "Precio"])
-
 
 def obtener_precios():
     """Obtiene los precios de todas las verduras desde la API"""
@@ -25,35 +19,49 @@ def obtener_precios():
         response = requests.get(url)
         data = response.json()
         
-        # Extraer los precios de la sección p2p
+        # Extraer los precios y el timestamp
         precios_verduras = data["data"]["p2p"]
-        return precios_verduras
+        timestamp = data["updatedAt"]
+        
+        return timestamp, precios_verduras
     except Exception as e:
         print(f"Error al obtener precios: {e}")
-        return {}
+        return None, {}
 
 def registrar_precios():
     """Obtiene y registra los precios de todas las verduras"""
-    now = datetime.datetime.now()
-    fecha = now.strftime("%Y-%m-%d")
-    hora = now.strftime("%H:%M:%S")
-    
-    precios_verduras = obtener_precios()
+    timestamp, precios_verduras = obtener_precios()
     
     if not precios_verduras:
         print("No se pudieron obtener precios. Verifique la conexión o la API.")
         return
     
-    nuevos_registros = []
+    # Convertir timestamp a formato legible
+    fecha_hora = datetime.datetime.fromtimestamp(timestamp/1000).strftime('%Y-%m-%d %H:%M:%S')
     
-    for verdura, precio in precios_verduras.items():
-        nuevos_registros.append([fecha, hora, verdura, precio])
-        print(f"Registrado: {verdura} a {precio} - {fecha} {hora}")
+    # Crear o actualizar el archivo CSV
+    file_exists = os.path.isfile(CSV_FILE)
     
-    # Guardar todos los registros al archivo CSV
+    # Determinar encabezados (timestamp + todas las verduras)
+    headers = ["Timestamp"] + list(precios_verduras.keys())
+    
+    # Preparar la nueva fila con el timestamp formateado y todos los precios
+    nueva_fila = [fecha_hora]
+    for verdura in headers[1:]:  # Todas las verduras excepto "Timestamp"
+        nueva_fila.append(precios_verduras.get(verdura, ""))
+    
+    # Escribir al CSV
     with open(CSV_FILE, 'a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerows(nuevos_registros)
+        
+        # Si el archivo no existe, escribir los encabezados primero
+        if not file_exists:
+            writer.writerow(headers)
+        
+        # Escribir la nueva fila con todos los precios
+        writer.writerow(nueva_fila)
+    
+    print(f"Registrado nuevo conjunto de precios en {fecha_hora}")
 
 if __name__ == "__main__":
     print("Ejecutando registro de precios de verduras...")
