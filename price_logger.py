@@ -15,10 +15,11 @@ if not Path(CSV_FILE).exists():
         writer = csv.writer(file)
         writer.writerow(["Fecha", "Hora", "Verdura", "Precio"])
 
+
 def obtener_precios():
     """Obtiene los precios de todas las verduras desde la API"""
     # URL de tu API (ajusta según sea necesario)
-    url = "https://sfl.world/api/v1/prices"
+    url = "https://tu-api-url.com/precios"
     
     try:
         response = requests.get(url)
