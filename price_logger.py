@@ -45,8 +45,10 @@ else:
 
 # Create full row with values in correct columns
 row = [timestamp]
-for asset in header[1:]:  # skip "Timestamp"
-    row.append(prices.get(asset, ""))
+for asset in header[1:]:
+    value = prices.get(asset, "")
+    print(f"{asset}: {value}")
+    row.append(value)
 
 # Append row to sheet
 sheet.append_row(row)
