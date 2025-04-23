@@ -5,7 +5,7 @@ import os
 
 # CONFIG
 API_URL = "https://sfl.world/api/v1/prices"  # SFL API
-OUTPUT_FILE = "D:/prices.txt"  # Change to your desired path
+OUTPUT_FILE = "prices.txt"  # Change to your desired path
 
 def fetch_prices():
     try:
@@ -43,7 +43,7 @@ def log_prices():
     else:
         df_new.to_csv(OUTPUT_FILE, index=False)
 
-    print(f"✅ Logged prices at {timestamp} UTC")
+    #print(f"✅ Logged prices at {timestamp} UTC")
 
 if __name__ == "__main__":
     log_prices()
