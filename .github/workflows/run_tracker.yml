@@ -2,8 +2,12 @@ name: Log Prices to Google Sheets
 
 on:
   schedule:
-    - cron: '1 */2 * * *'  # every 2 hours
+    - cron: '3 */2 * * *'  # every 2 hours
   workflow_dispatch:
+
+concurrency:
+  group: sfl-price-logger
+  cancel-in-progress: true
 
 jobs:
   run-logger:
