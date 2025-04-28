@@ -52,4 +52,3 @@ for asset in header[1:]:
 
 # Append row to sheet
 sheet.append_row(row)
-print("✅ Prices logged in row format.")
