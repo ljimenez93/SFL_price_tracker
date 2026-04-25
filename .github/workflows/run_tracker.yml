@@ -2,7 +2,7 @@ name: Log Prices to Google Sheets
 
 on:
   schedule:
-    - cron: '11 */3 * * *'  # every 3 hours
+    - cron: '8 */2 * * *'  # every 2 hours
   workflow_dispatch:
 
 concurrency:
