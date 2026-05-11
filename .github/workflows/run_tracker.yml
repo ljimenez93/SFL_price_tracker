@@ -1,31 +1,29 @@
 name: Log Prices to Google Sheets
-
-on:
-  schedule:
-    - cron: '8 */2 * * *'  # every 2 hours
+on:  
+  schedule:    
+    - cron: '8 */2 * * *'  # every 2 hours  
   workflow_dispatch:
 
-concurrency:
-  group: sfl-price-logger
+concurrency:  
+  group: sfl-price-logger  
   cancel-in-progress: true
 
-jobs:
-  run-logger:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.x
-
-      - name: Install dependencies
-        run: pip install gspread oauth2client requests
-
-      - name: Run logger
-        env:
-          GOOGLE_SHEETS_CREDS: ${{ secrets.GOOGLE_SHEETS_CREDS }}
+jobs:  
+  run-logger:    
+    runs-on: ubuntu-latest    
+    steps:      
+      - name: Checkout        
+        uses: actions/checkout@v4  # Updated to v4
+      
+      - name: Setup Python        
+        uses: actions/setup-python@v5  # Updated to v5
+        with:          
+          python-version: 3.x      
+      
+      - name: Install dependencies        
+        run: pip install gspread oauth2client requests      
+      
+      - name: Run logger        
+        env:          
+          GOOGLE_SHEETS_CREDS: ${{ secrets.GOOGLE_SHEETS_CREDS }}        
         run: python price_logger.py
