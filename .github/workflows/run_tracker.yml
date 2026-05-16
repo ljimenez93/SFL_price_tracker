@@ -3,6 +3,8 @@ on:
   schedule:    
     - cron: '8 */2 * * *'  # every 2 hours  
   workflow_dispatch:
+  repository_dispatch:
+    types: [trigger-cron]
 
 concurrency:  
   group: sfl-price-logger  
