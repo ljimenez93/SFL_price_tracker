@@ -1,6 +1,6 @@
 name: Log Prices to Google Sheets
 on:  
-  schedule:    
+  #schedule:    
   #  - cron: '8 */2 * * *'  # every 2 hours  
   workflow_dispatch:
   repository_dispatch:
