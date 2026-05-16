@@ -1,0 +1,25 @@
+name: Execute Script
+
+on:
+  repository_dispatch:
+    types: [trigger-cron]
+  workflow_dispatch: # Allows you to also run it manually from GitHub
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Environment (e.g., Python)
+        uses: actions/setup-python@v5
+        with:
+          python-python: '3.10' # Change to your language/version
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt # Remove if not needed
+
+      - name: Run Script
+        run: python price_logger.py 
